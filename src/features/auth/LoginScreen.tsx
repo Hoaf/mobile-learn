@@ -4,17 +4,21 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    StyleSheet,
     ActivityIndicator,
     Alert,
+    SafeAreaView,
+    ScrollView,
 } from 'react-native';
-import { apiService, setAuthToken } from '../../shared/services/api-service';
+import { apiService } from '../../shared/services/api-service';
+import { saveToken } from '../../shared/services/token-service';
+import { styles } from './LoginScreen.styles';
 
 interface LoginScreenProps {
     navigation: any;
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+    const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -29,7 +33,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         try {
             const response = await apiService.login(username, password);
             const { user, token } = response.data.data;
-            setAuthToken(token);
+            await saveToken(token);
             navigation.navigate('Products', { user });
         } catch (error: any) {
             const message =
@@ -41,75 +45,128 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Login</Text>
-
-            <TextInput
-                style={styles.input}
-                placeholder="Username"
-                value={username}
-                onChangeText={setUsername}
-                autoCapitalize="none"
-            />
-
-            <TextInput
-                style={styles.input}
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-            />
-
-            <TouchableOpacity
-                style={[styles.button, loading && styles.buttonDisabled]}
-                onPress={handleLogin}
-                disabled={loading}
+        <SafeAreaView style={styles.safeArea}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContent}
+                keyboardShouldPersistTaps="handled"
             >
-                {loading ? (
-                    <ActivityIndicator color="#fff" />
-                ) : (
-                    <Text style={styles.buttonText}>Login</Text>
-                )}
-            </TouchableOpacity>
-        </View>
+                {/* Header Icon */}
+                <View style={styles.iconContainer}>
+                    <View style={styles.iconCircle}>
+                        <Text style={styles.iconText}>🛍️</Text>
+                    </View>
+                </View>
+
+                {/* Title */}
+                <Text style={styles.title}>Welcome Back</Text>
+                <Text style={styles.subtitle}>Please enter your details</Text>
+
+                {/* Tab Switch */}
+                <View style={styles.tabContainer}>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'login' && styles.tabActive]}
+                        onPress={() => setActiveTab('login')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'login' && styles.tabTextActive]}>
+                            Login
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.tab, activeTab === 'signup' && styles.tabActive]}
+                        onPress={() => setActiveTab('signup')}
+                    >
+                        <Text style={[styles.tabText, activeTab === 'signup' && styles.tabTextActive]}>
+                            Sign Up
+                        </Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Form */}
+                <View style={styles.form}>
+                    <Text style={styles.label}>Username</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="johndoe123"
+                        placeholderTextColor="#BDBDBD"
+                        value={username}
+                        onChangeText={setUsername}
+                        autoCapitalize="none"
+                        autoCorrect={false}
+                    />
+
+                    <Text style={styles.label}>Password</Text>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="••••••••"
+                        placeholderTextColor="#BDBDBD"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry
+                    />
+
+                    <TouchableOpacity style={styles.forgotContainer}>
+                        <Text style={styles.forgotText}>Forget Password?</Text>
+                    </TouchableOpacity>
+
+                    {/* Sign In Button */}
+                    <TouchableOpacity
+                        style={[styles.signInButton, loading && styles.signInButtonDisabled]}
+                        onPress={handleLogin}
+                        disabled={loading}
+                        accessibilityRole="button"
+                        accessibilityLabel="Sign In"
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="#fff" />
+                        ) : (
+                            <Text style={styles.signInButtonText}>Sign In</Text>
+                        )}
+                    </TouchableOpacity>
+
+                    {/* Biometrics */}
+                    <TouchableOpacity style={styles.biometricsButton} accessibilityRole="button">
+                        <Text style={styles.biometricsText}>⚡ Sign in with Biometrics</Text>
+                    </TouchableOpacity>
+
+                    {/* Divider */}
+                    <View style={styles.dividerContainer}>
+                        <View style={styles.dividerLine} />
+                        <Text style={styles.dividerText}>Or continue with</Text>
+                        <View style={styles.dividerLine} />
+                    </View>
+
+                    {/* Social Login */}
+                    <View style={styles.socialContainer}>
+                        <TouchableOpacity
+                            style={styles.socialButton}
+                            accessibilityRole="button"
+                            accessibilityLabel="Continue with Google"
+                        >
+                            <Text style={styles.socialIcon}>G</Text>
+                            <Text style={styles.socialText}>Google</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={styles.socialButton}
+                            accessibilityRole="button"
+                            accessibilityLabel="Continue with Facebook"
+                        >
+                            <Text style={[styles.socialIcon, styles.facebookIcon]}>f</Text>
+                            <Text style={styles.socialText}>Facebook</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Footer */}
+                <Text style={styles.footerText}>
+                    By continuing, you agree to our{' '}
+                    <Text style={styles.footerLink}>Terms of Service</Text>
+                    {' '}and{' '}
+                    <Text style={styles.footerLink}>Privacy Policy</Text>
+                </Text>
+            </ScrollView>
+        </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        padding: 24,
-        backgroundColor: '#fff',
-    },
-    title: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        marginBottom: 32,
-        textAlign: 'center',
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        padding: 12,
-        marginBottom: 16,
-        fontSize: 16,
-    },
-    button: {
-        backgroundColor: '#2ecc71',
-        padding: 14,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    buttonDisabled: {
-        opacity: 0.6,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-});
 
 export default LoginScreen;
