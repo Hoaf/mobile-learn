@@ -7,10 +7,10 @@ import {
     StyleSheet,
 } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../../shared/types/navigation';
+import { ProductStackParamList } from '../../../shared/types/navigation';
 import sampleImage from '../../../shared/assets/images/sample.png';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'ProductDetail'>;
+type Props = NativeStackScreenProps<ProductStackParamList, 'ProductDetail'>;
 
 const ProductDetailScreen: React.FC<Props> = ({ route }) => {
     const { product } = route.params;

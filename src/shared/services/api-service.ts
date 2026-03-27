@@ -18,4 +18,13 @@ export const apiService = {
 
     getProducts: () =>
         api.get('/product'),
+
+    getUser: () =>
+        api.get('/user'),
+
+    updateUser: (data: { firstName?: string; lastName?: string; age?: number }) =>
+        api.patch('/user', data),
+
+    logout: () =>
+        api.post('/logout'),
 };

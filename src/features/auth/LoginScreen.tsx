@@ -9,19 +9,20 @@ import {
     SafeAreaView,
     ScrollView,
 } from 'react-native';
-import { apiService } from '../../shared/services/api-service';
-import { saveToken } from '../../shared/services/token-service';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../shared/types/navigation';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { loginThunk } from './store/authThunk';
 import { styles } from './LoginScreen.styles';
 
-interface LoginScreenProps {
-    navigation: any;
-}
+type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     const [activeTab, setActiveTab] = useState<'login' | 'signup'>('login');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
+    const dispatch = useAppDispatch();
+    const { loading } = useAppSelector(state => state.auth);
 
     const handleLogin = async () => {
         if (!username.trim() || !password.trim()) {
@@ -29,18 +30,11 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             return;
         }
 
-        setLoading(true);
-        try {
-            const response = await apiService.login(username, password);
-            const { user, token } = response.data.data;
-            await saveToken(token);
-            navigation.navigate('Products', { user });
-        } catch (error: any) {
-            const message =
-                error?.response?.data?.error?.message ?? 'Login failed';
-            Alert.alert('Error', message);
-        } finally {
-            setLoading(false);
+        const result = await dispatch(loginThunk({ username, password }));
+        if (loginThunk.fulfilled.match(result)) {
+            navigation.navigate('HomeTabs', { user: result.payload.user });
+        } else {
+            Alert.alert('Error', (result.payload as string) ?? 'Login failed');
         }
     };
 
@@ -50,18 +44,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 contentContainerStyle={styles.scrollContent}
                 keyboardShouldPersistTaps="handled"
             >
-                {/* Header Icon */}
                 <View style={styles.iconContainer}>
                     <View style={styles.iconCircle}>
                         <Text style={styles.iconText}>🛍️</Text>
                     </View>
                 </View>
 
-                {/* Title */}
                 <Text style={styles.title}>Welcome Back</Text>
                 <Text style={styles.subtitle}>Please enter your details</Text>
 
-                {/* Tab Switch */}
                 <View style={styles.tabContainer}>
                     <TouchableOpacity
                         style={[styles.tab, activeTab === 'login' && styles.tabActive]}
@@ -81,7 +72,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Form */}
                 <View style={styles.form}>
                     <Text style={styles.label}>Username</Text>
                     <TextInput
@@ -108,7 +98,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                         <Text style={styles.forgotText}>Forget Password?</Text>
                     </TouchableOpacity>
 
-                    {/* Sign In Button */}
                     <TouchableOpacity
                         style={[styles.signInButton, loading && styles.signInButtonDisabled]}
                         onPress={handleLogin}
@@ -123,19 +112,16 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                         )}
                     </TouchableOpacity>
 
-                    {/* Biometrics */}
                     <TouchableOpacity style={styles.biometricsButton} accessibilityRole="button">
                         <Text style={styles.biometricsText}>⚡ Sign in with Biometrics</Text>
                     </TouchableOpacity>
 
-                    {/* Divider */}
                     <View style={styles.dividerContainer}>
                         <View style={styles.dividerLine} />
                         <Text style={styles.dividerText}>Or continue with</Text>
                         <View style={styles.dividerLine} />
                     </View>
 
-                    {/* Social Login */}
                     <View style={styles.socialContainer}>
                         <TouchableOpacity
                             style={styles.socialButton}
@@ -155,8 +141,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
                 </View>
-
-                {/* Footer */}
                 <Text style={styles.footerText}>
                     By continuing, you agree to our{' '}
                     <Text style={styles.footerLink}>Terms of Service</Text>
