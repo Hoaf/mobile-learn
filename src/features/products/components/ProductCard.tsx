@@ -8,7 +8,13 @@ import {
     Dimensions,
 } from 'react-native';
 import { Product } from '../models/product';
-import sampleImage from '../../../shared/assets/images/sample.png';
+const productImages = [
+    require('../../../shared/assets/images/sample1.png'),
+    require('../../../shared/assets/images/sample2.png'),
+    require('../../../shared/assets/images/sample3.png'),
+    require('../../../shared/assets/images/sample4.png'),
+    require('../../../shared/assets/images/sample5.png'),
+];
 
 const { width } = Dimensions.get('window');
 const COLUMN_GAP = 12;
@@ -22,7 +28,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onPress }) => (
     <TouchableOpacity style={styles.card} onPress={() => onPress(product)}>
-        <Image source={sampleImage} style={styles.image} resizeMode="cover" />
+        <Image source={productImages[product.id % productImages.length]} style={styles.image} resizeMode="cover" />
         <View style={styles.info}>
             <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
             <Text style={styles.price}>{product.price} {product.priceUnit}</Text>
